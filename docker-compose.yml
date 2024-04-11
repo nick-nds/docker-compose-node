@@ -1,5 +1,6 @@
 networks:
-  simplified:
+  mynetwork:
+    name: ${PROJECT:-docker}
     driver: bridge
 
 services:
@@ -8,7 +9,7 @@ services:
       context: ./nodejs
     container_name: ${PROJECT:-docker}-node
     networks:
-      - simplified
+      - mynetwork
     volumes:
       - ./src:/app
       - domains:/domains-list
@@ -22,7 +23,7 @@ services:
         app_domain: ${APP_DOMAIN}
     container_name: ${PROJECT:-docker}-nginx
     networks:
-      - simplified
+      - mynetwork
     ports:
       - "443:443"
     volumes:
