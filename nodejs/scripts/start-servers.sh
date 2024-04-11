@@ -8,6 +8,14 @@ workdir="/app"
 # BRANCHES="branch1,branch2,branch3"
 branches=$1
 
+domains_file="/domains-list/domains"
+
+# if branches is empty read branches from domains file
+if [ -z $branches ]; then
+    domains=$(cat $domains_file | cut -d'.' -f1 | tr '\n' ',')
+    branches=${domains::-1}
+fi
+
 # filter out the worktrees having package.json file
 worktrees=$(for worktree in $worktrees; do
     # create worktrees path by appeding $workdir and last folder in worktree
@@ -15,50 +23,29 @@ worktrees=$(for worktree in $worktrees; do
     path=$workdir/$branch
     # check if $branch exists in $branches only if $branches is not empty and package.json exists
     if [ -f $path/package.json ] && ( [ -z $branches ] || [[ $branches == *$branch* ]] ); then
-        # install npm in these worktrees
-        cd $path
-        npm install
         echo $path
     fi
 done)
 
-domains_file="/domains/domains"
-# domains_file="/home/codeclouds-nitin/projects/simplified/nginx/servers/domains"
+# install npm in these worktrees
+for worktree in $worktrees; do
+    cd $worktree
+    npm install
+done
 
-get_port() {
-    # get port number from domains file
-    # 8080 foo.bar.com
-    
-    # Check if domains file exists
-    if [ -f $domains_file ]; then
-        # Read domains from domains.txt file
-        while IFS= read -r line; do
-            # Split the line into an array
-            IFS=' ' read -r -a domain <<< "$line"
-            # Get the port number
-            port=${domain[0]}
-            # Get the domain name
-            domain_name=${domain[1]}
-            # check if subdomain of domain_name exists in worktrees
-            subdomain=$(echo $domain_name | cut -d'.' -f1)
-            if [ $subdomain == $1 ]; then
-                echo $port
-            fi
-        done < $domains_file
-    fi
-}
 
+
+i=0
 # get port number and start server for each worktree
 for worktree in $worktrees; do
     # get subdomain by splitting worktree path and picking last element
     subdomain=$(echo $worktree | rev | cut -d'/' -f1 | rev)
     # get port number
-    port=$(get_port $subdomain)
-    echo $port
+    port=$((9000 + i++))
     # start server
     if [ ! -z $port ]; then
-        echo "Starting server for $subdomain on port $port"
         cd $worktree
+        echo "Starting server for $subdomain on port $port"
         # run server and save pid to kill later
         # show output in stdout
         npm run dev -- --port $port & echo $! > /tmp/$subdomain.server.pid & wait $!
