@@ -1,0 +1,31 @@
+networks:
+  simplified:
+    driver: bridge
+
+services:
+  nodejs:
+    build:
+      context: ./nodejs
+    container_name: simplified-node
+    networks:
+      - simplified
+    volumes:
+      - ./src:/app
+      - domains:/domains
+    working_dir: /app
+
+  nginx:
+    build:
+      context: ./nginx
+    container_name: simplified-nginx
+    networks:
+      - simplified
+    ports:
+      - "443:443"
+    volumes:
+      - domains:/domains
+    depends_on:
+      - nodejs
+
+volumes:
+  domains:
