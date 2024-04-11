@@ -1,5 +1,7 @@
 /tags*
 
+/.env
+
 /src/*
 
 /nginx/servers/domains
