@@ -25,3 +25,14 @@ else
     rm /tmp/$server_name.server.pid
     echo "Stopped server $server_name"
 fi
+
+# wait for 5 seconds
+sleep 5
+
+# check if process of patter `npm run dev --port` is running
+process=$(ps aux | grep "npm run dev --port" | grep -v grep)
+if [ -z "$process" ]; then
+    echo "All servers are stopped."
+    # kill all bash processes
+    kill $(ps aux | grep bash | grep -v grep | awk '{print $1}' | xargs -I {} kill -9 {})
+fi
