@@ -33,6 +33,8 @@ for worktree in $worktrees; do
     npm install
 done
 
+#sort worktrees by name
+worktrees=$(echo $worktrees | tr ' ' '\n' | sort)
 
 
 i=0
